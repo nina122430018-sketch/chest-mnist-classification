@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 from utils import plot_training_history, visualize_random_val_predictions
 
 # --- Hyperparameter ---
-EPOCHS = 30
+EPOCHS = 40
 BATCH_SIZE = 32
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.00005
 
 #Menampilkan plot riwayat training dan validasi setelah training selesai.
 
