@@ -28,7 +28,7 @@ ALL_CLASS_NAMES = [
 ]
 
 class FilteredBinaryDataset(Dataset):
-    def __init__(self, split, transform=None):
+    def _init_(self, split, transform=None):
         self.transform = transform
         
         # Muat dataset lengkap
@@ -58,10 +58,10 @@ class FilteredBinaryDataset(Dataset):
         print(f"Jumlah Pneumothorax (label 1): {len(indices_b)}")
         print()
 
-    def __len__(self):
+    def _len_(self):
         return len(self.labels)
 
-    def __getitem__(self, idx):
+    def _getitem_(self, idx):
         image = self.images[idx]
         label = self.labels[idx]
 
@@ -71,13 +71,29 @@ class FilteredBinaryDataset(Dataset):
         return image, torch.tensor([label])
 
 def get_data_loaders(batch_size):
-    data_transform = transforms.Compose([
+    # Data augmentation untuk training
+    train_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.RandomAffine(
+            degrees=10,           # Rotasi ±10 derajat
+            translate=(0.1, 0.1), # Translasi 10%
+            scale=(0.9, 1.1),     # Zoom 90%-110%
+        ),
+        transforms.RandomHorizontalFlip(p=0.5),  # Flip horizontal
+        transforms.RandomApply([
+            transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 0.5))
+        ], p=0.3),  # Blur 30% dari waktu
+        transforms.Normalize(mean=[.5], std=[.5]),
+    ])
+    
+    # Validasi tanpa augmentasi
+    val_transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=[.5], std=[.5]),
     ])
 
-    train_dataset = FilteredBinaryDataset('train', data_transform)
-    val_dataset = FilteredBinaryDataset('test', data_transform)
+    train_dataset = FilteredBinaryDataset('train', train_transform)
+    val_dataset = FilteredBinaryDataset('test', val_transform)
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)
@@ -153,7 +169,7 @@ def show_class_distribution(split='train'):
     
     return sorted_classes
 
-if __name__ == '__main__':
+if _name_ == '_main_':
     print("Memuat dataset untuk plotting...")
     
     # Tampilkan distribusi kelas
